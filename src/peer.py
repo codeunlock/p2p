@@ -4,12 +4,13 @@ from random import random
 import os 
 
 class Peer:
-     
+
      
      def __init__(self, tracker_host, tracker_port,shared_directory):
           self.tracker_host = tracker_host
           self.tracker_port = tracker_port
           self.shared_directory = shared_directory
+
 
      def send_message(self, message):
           with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:

@@ -1,14 +1,14 @@
 import socket
 import threading
 import json
-from random import random 
+import random
 
 class Tracker:
      def __init__(self, port):
           self.port = port    
           self.peers = {}  # Stores info about the connected peers
           self.files = {}  # Stores info about the available files
-
+          self.connected_ids = []  # List to store currently connected token IDs
 
      def handle_peer(self, connection, address):
           while True:
@@ -45,30 +45,40 @@ class Tracker:
           connection.sendall(json.dumps(response).encode())
      
      
-     # Login function 
      def login(self, message, connection, address):
           user_name = message.get("user_name")
           password = message.get("password")  # Extract password from message
           if user_name in self.peers:
                if self.peers[user_name]['password'] == password:  # Check if provided password matches stored password
-                    token_id = random()
-                    print(token_id)  # Prints for check | TODO REMOVE IT IF CORRECT
+                    token_id = random.randint(1, 1000)
+                    print("New Connection's Token ID:", token_id)  # Prints for check | TODO REMOVE IT IF CORRECT
+                    self.peers[user_name]['token_id'] = token_id  # Store token ID along with user info
+                    self.connected_ids.append(token_id)  # Add token ID to connected IDs list
+
                     response = {'status': 'success', 'token_id': token_id}
                else:
                     response = {'status': 'error', 'message': 'Incorrect password'}
           else:
                response = {'status': 'error', 'message': 'Username not found'}
           connection.sendall(json.dumps(response).encode())
-     
+          return token_id  # Return the generated token_id
+
      
      # logout function 
-     def logout(self,message):
+     def logout(self, message):
           token_id = message.get('token_id')
-          for user_name, peer_info in self.peers.items():
-               if peer_info.get('token_id') == token_id:
-                    del self.peers[user_name]
-                    break
-     
+          print("Before logout:", self.connected_ids)  # Print before removal
+          if token_id in self.connected_ids:
+               self.connected_ids.remove(token_id)
+               print("After logout:", self.connected_ids)  # Print after removal
+               for user_name, peer_info in self.peers.items():
+                    if peer_info.get('token_id') == token_id:
+                         del self.peers[user_name]['token_id']
+                         break
+          else:
+               print("Token ID not found in connected IDs list")
+
+
      def list(self, connection):
           files = list(self.files.keys())
           connection.sendall(json.dumps(files).encode())
@@ -96,5 +106,5 @@ class Tracker:
                
 
 if __name__ == "__main__":
-    tracker = Tracker(5000)  # Port number 
+    tracker = Tracker(22222)  # Port number 
     tracker.start()

@@ -47,21 +47,22 @@ class Tracker:
      
      def login(self, message, connection, address):
           user_name = message.get("user_name")
-          password = message.get("password")  # Extract password from message
+          password = message.get("password")
           if user_name in self.peers:
-               if self.peers[user_name]['password'] == password:  # Check if provided password matches stored password
+               if self.peers[user_name]['password'] == password:
                     token_id = random.randint(1, 1000)
-                    print("New Connection's Token ID:", token_id)  # Prints for check | TODO REMOVE IT IF CORRECT
-                    self.peers[user_name]['token_id'] = token_id  # Store token ID along with user info
-                    self.connected_ids.append(token_id)  # Add token ID to connected IDs list
-
+                    print("New Connection's Token ID:", token_id)
+                    self.peers[user_name]['token_id'] = token_id
+                    self.connected_ids.append(token_id)
+                    print("Connected IDs:", self.connected_ids)  # Checking if id is added correctly 
                     response = {'status': 'success', 'token_id': token_id}
                else:
                     response = {'status': 'error', 'message': 'Incorrect password'}
           else:
                response = {'status': 'error', 'message': 'Username not found'}
           connection.sendall(json.dumps(response).encode())
-          return token_id  # Return the generated token_id
+          return token_id
+
 
      
      # logout function 

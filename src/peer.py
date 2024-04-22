@@ -2,7 +2,9 @@ import socket
 import json
 from random import random
 import os 
+
 class Peer:
+     
      
      def __init__(self, tracker_host, tracker_port,shared_directory):
           self.tracker_host = tracker_host
@@ -53,7 +55,7 @@ class Peer:
 if __name__ == "__main__":
      peer = Peer("localhost", 5000, "/Users/alex/aueb/com_net/p2p/shared_directory")  # Host and port of the Tracker
      peer.register_shared_files()
-     list_response = peer.list_files()
+     list_response = peer.list()
      print(list_response)
      # Test peer registration
      register_response = peer.register("user1", "password1")
@@ -64,6 +66,7 @@ if __name__ == "__main__":
 
      list_response = peer.list()
      print(list_response)
+
 
 """ 
 TODO:

@@ -1,42 +1,59 @@
 import socket 
 import json
-#from random import randint
 import random
 
 class Peer:
-     
      def __init__(self, tracker_host, tracker_port):
           self.tracker_host = tracker_host
           self.tracker_port = tracker_port
+          self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+          self.client_socket.settimeout(5)  # Set a timeout of 5 seconds
+          try:
+               self.client_socket.connect((self.tracker_host, self.tracker_port))
+          except Exception as e:
+               print("Error connecting to tracker:", e)
 
      def send_message(self, message):
-          with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
-               client_socket.connect((self.tracker_host, self.tracker_port))
-               client_socket.sendall(json.dumps(message).encode())
-               response = client_socket.recv(1024) # 1024 = receiving code
+          try:
+               with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+                    client_socket.settimeout(5)  # Set a timeout of 5 seconds
+                    client_socket.connect((self.tracker_host, self.tracker_port))
+                    client_socket.sendall(json.dumps(message).encode())
+                    response = client_socket.recv(1024)
                return json.loads(response.decode())
-          
+          except socket.timeout:
+               print("Socket operation timed out.")
+               return {'status': 'error', 'message': 'Socket operation timed out.'}
+          except Exception as e:
+               print("Error:", e)
+               return {'status': 'error', 'message': str(e)}
+
+
      def register(self, user_name, password):
           message = {'action': 'register', 'user_name': user_name, 'password': password}
           return self.send_message(message)
-     
+
      def login(self, user_name, password):
           message = {'action': 'login', 'user_name': user_name, 'password': password}
           login_response = self.send_message(message)
           token_id = login_response.get('token_id', None)  # Extract token ID from login response
           return token_id
-          
+
      def logout(self, token_id):
           message = {'action': 'logout', 'token_id': token_id}
           return self.send_message(message)
-     
+
      def list(self):
           message = {'action': 'list'}
           return self.send_message(message)
 
      def details(self, filename):
-          message = {'action': 'details', 'filenae': filename}
+          message = {'action': 'details', 'filename': filename}
           return self.send_message(message)
+
+     def __del__(self):
+          self.client_socket.close()  # Close the socket when Peer instance is deleted
+
 
 
 if __name__ == "__main__":

@@ -67,17 +67,22 @@ class Tracker:
      
      # logout function 
      def logout(self, message):
-          token_id = message.get('token_id')
-          print("Before logout:", self.connected_ids)  # Print before removal
+          token_id = int(message.get('token_id'))  # Convert to integer
+          print("Token ID to logout:", token_id)
+          print("Connected IDs before logout:", self.connected_ids)
           if token_id in self.connected_ids:
                self.connected_ids.remove(token_id)
-               print("After logout:", self.connected_ids)  # Print after removal
+               print("Connected IDs after logout:", self.connected_ids)
                for user_name, peer_info in self.peers.items():
                     if peer_info.get('token_id') == token_id:
                          del self.peers[user_name]['token_id']
-                         break
+               response = {'status': 'success', 'message': 'Logout successful'}
           else:
                print("Token ID not found in connected IDs list")
+               response = {'status': 'error', 'message': 'Token ID not found in connected IDs list'}
+          return response
+
+
 
 
      def list(self, connection):

@@ -1,6 +1,5 @@
 import socket 
 import json
-#from random import randint
 import random
 
 class Peer:

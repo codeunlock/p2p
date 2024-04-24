@@ -67,7 +67,6 @@ class Peer:
 
         return files
 
-
     def details(self, filename):
         message = {'action': 'details', 'filename': filename}
         return self.send_message(message)
@@ -109,7 +108,6 @@ if __name__ == "__main__":
 
         elif choice == "4":
             list_response = peer.list()
-            print(list_response,"\n")
 
         elif choice == "5":
             filename = input("\nEnter filename: ")

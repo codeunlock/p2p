@@ -2,9 +2,9 @@ import socket
 import threading
 import json
 import random
-
+import os
 class Tracker:
-    def __init__(self, port):
+    def __init__(self, port,shared_directory):
         self.port = port
         self.peers = {}  # Stores info about the connected peers
         self.files = {}  # Stores info about the available files
@@ -64,7 +64,7 @@ class Tracker:
             else:
                 response = {'status': 'error', 'message': 'Incorrect password'}
         else:
-            response = {'status': 'error', 'message': 'Username not found'}
+            response = {'status': 'error', 'message': 'Username not foundshared_directory'}
 
         connection.sendall(json.dumps(response).encode())
         return response
@@ -96,16 +96,28 @@ class Tracker:
         return response
 
     def list(self, connection):
-        files = []
-        for root, dirs, filenames in os.walk(self.shared_directory):
-            for dir_name in dirs:
-                if dir_name.startswith("Peer"):
-                    peer_directory = os.path.join(root, dir_name)
-                    peer_files = [f for f in os.listdir(peer_directory) if f.endswith('.txt')]
-                    files.extend(peer_files)
+        try:
+            files = []
+            for root, dirs, filenames in os.walk(self.shared_directory):
+                print("Root:", root)
+                print("Directories:", dirs)
+                print("Filenames:", filenames)
+                for dir_name in dirs:
+                    if dir_name.startswith("Peer"):
+                        peer_directory = os.path.join(root, dir_name)
+                        print("Peer directory:", peer_directory)
+                        peer_files = [f for f in os.listdir(peer_directory) if f.endswith('.txt')]
+                        print("Peer files:", peer_files)
+                        files.extend(peer_files)
 
-        response = {'status': 'success', 'files': files}
-        connection.sendall(json.dumps(response).encode())
+            response = {'files': files}
+            connection.sendall(json.dumps(response).encode())
+            print("List response sent successfully.")
+        except Exception as e:
+            print("Error listing files:", e)
+            response = {'status': 'error', 'message': 'Error listing files'}
+            connection.sendall(json.dumps(response).encode())
+
 
 
     def details(self, message, connection):
@@ -137,6 +149,6 @@ class Tracker:
                 thread.start()
 
 if __name__ == "__main__":
-    shared_directory = "/home/kafka/p2p/src/shared_directory"
-    tracker = Tracker(5000)  # Port number
+    shared_directory = "/home/kafka/p2p/src/shared_directory/"
+    tracker = Tracker(5000,shared_directory)  # Port number
     tracker.start()

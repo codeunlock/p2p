@@ -9,6 +9,7 @@ class Tracker:
         self.peers = {}  # Stores info about the connected peers
         self.files = {}  # Stores info about the available files
         self.connected_ids = []  # List to store currently connected token IDs
+        self.shared_directory = shared_directory
 
     def handle_peer(self, connection, address):
         while True:
@@ -49,8 +50,11 @@ class Tracker:
     def login(self, message, connection, address):
         user_name = message.get("user_name")
         password = message.get("password")
+
         if user_name in self.peers:
-            if self.peers[user_name]['password'] == password:
+            if 'token_id' in self.peers[user_name]:  # Check if user already has a token ID
+                response = {'status': 'error', 'message': 'User is already logged in'}
+            elif self.peers[user_name]['password'] == password:
                 token_id = random.randint(1, 1000)
                 print("New Connection's Token ID:", token_id)
                 self.peers[user_name]['token_id'] = token_id
@@ -61,8 +65,10 @@ class Tracker:
                 response = {'status': 'error', 'message': 'Incorrect password'}
         else:
             response = {'status': 'error', 'message': 'Username not found'}
+
         connection.sendall(json.dumps(response).encode())
-        return token_id
+        return response
+
 
     # logout function
     def logout(self, message, connection):
@@ -90,8 +96,17 @@ class Tracker:
         return response
 
     def list(self, connection):
-        files = list(self.files.keys())
-        connection.sendall(json.dumps(files).encode())
+        files = []
+        for root, dirs, filenames in os.walk(self.shared_directory):
+            for dir_name in dirs:
+                if dir_name.startswith("Peer"):
+                    peer_directory = os.path.join(root, dir_name)
+                    peer_files = [f for f in os.listdir(peer_directory) if f.endswith('.txt')]
+                    files.extend(peer_files)
+
+        response = {'status': 'success', 'files': files}
+        connection.sendall(json.dumps(response).encode())
+
 
     def details(self, message, connection):
         filename = message.get('filename')
@@ -122,5 +137,6 @@ class Tracker:
                 thread.start()
 
 if __name__ == "__main__":
+    shared_directory = "/home/kafka/p2p/src/shared_directory"
     tracker = Tracker(5000)  # Port number
     tracker.start()

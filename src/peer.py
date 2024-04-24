@@ -58,7 +58,15 @@ class Peer:
 
     def list(self):
         message = {'action': 'list'}
-        return self.send_message(message)
+        response = self.send_message(message)
+
+        if 'status' in response and response['status'] == 'success':
+            files = response['files']
+        else:
+            files = []
+
+        return files
+
 
     def details(self, filename):
         message = {'action': 'details', 'filename': filename}

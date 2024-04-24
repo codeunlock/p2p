@@ -30,9 +30,9 @@ class Tracker:
         elif action == 'logout':
             self.logout(message, connection)
         elif action == 'list':
-            self.list(connection)
+            self.reply_list(connection)
         elif action == 'details':
-            self.details(message, connection)
+            self.reply_details(message, connection)
         elif action == 'add_file':
             self.add_file(message, connection)
 
@@ -95,7 +95,7 @@ class Tracker:
         print("Logout response:", response)  # Add this line for debugging
         return response
 
-    def list(self, connection):
+    def reply_list(self, connection):
         try:
             files = []
             for root, dirs, filenames in os.walk(self.shared_directory):
@@ -110,7 +110,7 @@ class Tracker:
                         print("Peer files:", peer_files)
                         files.extend(peer_files)
 
-            response = {'files': files}
+            response = {'status': 'success', 'files': files}
             connection.sendall(json.dumps(response).encode())
             print("List response sent successfully.")
         except Exception as e:
@@ -118,16 +118,16 @@ class Tracker:
             response = {'status': 'error', 'message': 'Error listing files'}
             connection.sendall(json.dumps(response).encode())
 
-
-
-    def details(self, message, connection):
+    def reply_details(self, message, connection):
         filename = message.get('filename')
+        print("Tracker records:", self.files)  # Add this line to print the tracker's records
         if filename in self.files:
             details = self.files[filename]
             connection.sendall(json.dumps(details).encode())
         else:
             response = {'status': 'error', 'message': 'File not found'}
             connection.sendall(json.dumps(response).encode())
+
 
     def add_file(self, message, connection):
         filename = message.get('filename')

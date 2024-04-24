@@ -27,7 +27,7 @@ class Tracker:
           elif action == 'login':
                self.login(message,connection,address)
           elif action == 'logout':
-               self.logout(message)
+               self.logout(message,connection)
           elif action == 'list':
                self.list(connection)
           elif action == 'details':
@@ -66,21 +66,31 @@ class Tracker:
 
      
      # logout function 
-     def logout(self, message):
+     def logout(self, message,connection):
           token_id = int(message.get('token_id'))  # Convert to integer
           print("Token ID to logout:", token_id)
           print("Connected IDs before logout:", self.connected_ids)
+
           if token_id in self.connected_ids:
                self.connected_ids.remove(token_id)
                print("Connected IDs after logout:", self.connected_ids)
+
                for user_name, peer_info in self.peers.items():
                     if peer_info.get('token_id') == token_id:
                          del self.peers[user_name]['token_id']
+                         print(f"Token ID {token_id} removed for user {user_name}")
+
                response = {'status': 'success', 'message': 'Logout successful'}
+               connection.sendall(json.dumps(response).encode())  # Send the response back to the peer
           else:
                print("Token ID not found in connected IDs list")
                response = {'status': 'error', 'message': 'Token ID not found in connected IDs list'}
+               connection.sendall(json.dumps(response).encode())  # Send the error response back to the peer
+
+          print("Logout response:", response)  # Add this line for debugging
           return response
+
+
 
 
 
@@ -112,5 +122,5 @@ class Tracker:
                
 
 if __name__ == "__main__":
-    tracker = Tracker(22222)  # Port number 
+    tracker = Tracker(5000)  # Port number 
     tracker.start()

@@ -1,5 +1,5 @@
 # P2P File System in Python
-# TODO:
+
 ## Overview
 
 This project implements a Peer-to-Peer (P2P) File System in Python, comprising a system with one tracker and multiple similar peers. Each peer maintains a shared directory containing files available for sharing within the network. Peers connect to the tracker to exchange information about available files and facilitate file transfers among themselves. The system is designed to support simultaneous connections and robust file sharing functionalities.

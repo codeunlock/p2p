@@ -60,7 +60,7 @@ class Tracker:
             self.peers[user_name] = {'password': password, 'address': address}  # Store password along with user info
             response = {'status': 'success', 'message': 'Registration successful'}
         connection.sendall(json.dumps(response).encode())
-
+    
     def login(self, message, connection, address):
         user_name = message.get("user_name")
         password = message.get("password")

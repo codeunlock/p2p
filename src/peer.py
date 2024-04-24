@@ -2,6 +2,7 @@ import os
 import socket
 import json
 import random
+import shutil
 
 class Peer:
     def __init__(self, tracker_host, tracker_port, shared_directory):
@@ -71,10 +72,23 @@ class Peer:
         message = {'action': 'details', 'filename': filename}
         return self.send_message(message)
 
+    def delete_shared_directory_contents(self):
+        try:
+            for filename in os.listdir(self.shared_directory):
+                file_path = os.path.join(self.shared_directory, filename)
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            print("Shared directory contents deleted successfully.")
+        except Exception as e:
+            print("Error deleting shared directory contents:", e)
+
     def __del__(self):
         self.client_socket.close()  # Close the socket when Peer instance is deleted
 
 if __name__ == "__main__":
+
     shared_directory = "/home/kafka/p2p/src/shared_directory"
     peer = Peer("localhost", 5000, shared_directory)  # Host and port of the Tracker
 
@@ -108,6 +122,7 @@ if __name__ == "__main__":
 
         elif choice == "4":
             list_response = peer.list()
+            print(list_response,"\n")
 
         elif choice == "5":
             filename = input("\nEnter filename: ")
@@ -115,6 +130,7 @@ if __name__ == "__main__":
             print(details_response,"\n")
 
         elif choice == "6":
+            peer.delete_shared_directory_contents()
             print("\nExiting...")
             break
 

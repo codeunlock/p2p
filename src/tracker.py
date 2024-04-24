@@ -11,6 +11,20 @@ class Tracker:
         self.connected_ids = []  # List to store currently connected token IDs
         self.shared_directory = shared_directory
 
+    # Function to update the Tracker records with the available files and their owners
+        def update_records(self):
+            self.files = {}
+            for root, dirs, filenames in os.walk(self.shared_directory):
+                for dir_name in dirs:
+                    if dir_name.startswith("Peer"):
+                        peer_directory = os.path.join(root, dir_name)
+                        peer_files = [f for f in os.listdir(peer_directory) if f.endswith('.txt')]
+                        for file_name in peer_files:
+                            file_path = os.path.join(peer_directory, file_name)
+                            owner = dir_name  # The owner is the directory name (e.g., "Peer1")
+                            self.files[file_name] = owner
+
+
     def handle_peer(self, connection, address):
         while True:
             data = connection.recv(1024)
